@@ -183,6 +183,29 @@ func (s *RedeemSavingsFlexibleProductService) Do(ctx context.Context, opts ...Re
 	return err
 }
 
+//https://binance-docs.github.io/apidocs/spot/en/#lending-account-user_data
+type GetLendingAccountService struct {
+	c *Client
+}
+
+func (s *GetLendingAccountService) Do(ctx context.Context, opts ...RequestOption) (*SavingsFixedAccount, error) {
+
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/sapi/v1/lending/union/account",
+		secType:  secTypeSigned,
+	}
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(string(data))
+	var res *SavingsFixedAccount
+	if err = json.Unmarshal(data, &res); err != nil {
+		return nil, err
+	}
+	return res, nil
+}
 
 // https://binance-docs.github.io/apidocs/spot/en/#get-purchase-record-user_data
 type GetLendingPurchaseRecordService struct {
@@ -279,6 +302,11 @@ func (s *GetSavingsFixedActivityPositionsService) ProjectId(projectId string) *G
 	return s
 }
 
+func (s *GetSavingsFixedActivityPositionsService) Status(status string) *GetSavingsFixedActivityPositionsService {
+	s.status = status
+	return s
+}
+
 // Do send request
 func (s *GetSavingsFixedActivityPositionsService) Do(ctx context.Context, opts ...RequestOption) ([]*SavingsFixedPosition, error) {
 	r := &request{
@@ -295,13 +323,11 @@ func (s *GetSavingsFixedActivityPositionsService) Do(ctx context.Context, opts .
 	if s.status != "" {
 		m["status"] = s.status
 	}
-	fmt.Println(m)
 	r.setParams(m)
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(data))
 	var res []*SavingsFixedPosition
 	if err = json.Unmarshal(data, &res); err != nil {
 		return nil, err

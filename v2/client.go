@@ -467,6 +467,12 @@ func (c *Client) NewRedeemSavingsFlexibleProductService() *RedeemSavingsFlexible
 func (c *Client) NewGetLendingPurchaseRecordService() *GetLendingPurchaseRecordService {
 	return &GetLendingPurchaseRecordService{c: c}
 }
+
+// NewGetLendingAccountService get fixed and activity product list (Savings)
+func (c *Client) NewGetLendingAccountService() *GetLendingAccountService {
+	return &GetLendingAccountService{c: c}
+}
+
 // NewListSavingsFixedAndActivityProductsService get fixed and activity product list (Savings)
 func (c *Client) NewGetSavingsFixedAndActivityPositionService() *GetSavingsFixedActivityPositionsService {
 	return &GetSavingsFixedActivityPositionsService{c: c}
