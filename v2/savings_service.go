@@ -3,6 +3,7 @@ package binance
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -182,6 +183,55 @@ func (s *RedeemSavingsFlexibleProductService) Do(ctx context.Context, opts ...Re
 	return err
 }
 
+// GetSavingsFixedActivityPositionsService https://binance-docs.github.io/apidocs/spot/en/#get-fixed-activity-project-position-user_data
+type GetSavingsFixedActivityPositionsService struct {
+	c         *Client
+	asset     string
+	projectId string
+	status    string
+}
+
+// Asset desired asset
+func (s *GetSavingsFixedActivityPositionsService) Asset(asset string) *GetSavingsFixedActivityPositionsService {
+	s.asset = asset
+	return s
+}
+
+func (s *GetSavingsFixedActivityPositionsService) ProjectId(projectId string) *GetSavingsFixedActivityPositionsService {
+	s.projectId = projectId
+	return s
+}
+
+// Do send request
+func (s *GetSavingsFixedActivityPositionsService) Do(ctx context.Context, opts ...RequestOption) ([]*SavingsFixedPosition, error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/sapi/v1/lending/project/position/list",
+		secType:  secTypeSigned,
+	}
+	m := params{
+		"asset": s.asset,
+	}
+	if s.projectId != "" {
+		m["projectId"] = s.projectId
+	}
+	if s.status != "" {
+		m["status"] = s.status
+	}
+	fmt.Println(m)
+	r.setParams(m)
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(string(data))
+	var res []*SavingsFixedPosition
+	if err = json.Unmarshal(data, &res); err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 // ListSavingsFixedAndActivityProductsService https://binance-docs.github.io/apidocs/spot/en/#get-fixed-and-activity-project-list-user_data
 type ListSavingsFixedAndActivityProductsService struct {
 	c           *Client
@@ -294,4 +344,26 @@ type SavingsFixedProduct struct {
 	Status             string `json:"status"`
 	Type               string `json:"type"`
 	WithAreaLimitation bool   `json:"withAreaLimitation"`
+}
+
+type SavingsFixedPosition struct {
+	Asset       string `json:"asset"`
+	CanTransfer bool   `json:"canTransfer"`
+	ProjectId   string `json:"projectId"`
+	ProjectName string `json:"projectName"`
+	Status      string `json:"status"`
+	Type        string `json:"type"`
+	// {
+	//     "createTimestamp": 1587010770000,
+	//     "duration": 14,
+	//     "endTime": 1588291200000,
+	//     "interest": "0.19950000",
+	//     "interestRate": "0.05201250",
+	//     "lot": 1,
+	//     "positionId": 51724,
+	//     "principal": "100.00000000",
+	//     "purchaseTime": 1587010771000,
+	//     "redeemDate": "2020-05-01",
+	//     "startTime": 1587081600000,
+	// }
 }

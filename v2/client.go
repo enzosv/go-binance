@@ -464,6 +464,11 @@ func (c *Client) NewRedeemSavingsFlexibleProductService() *RedeemSavingsFlexible
 }
 
 // NewListSavingsFixedAndActivityProductsService get fixed and activity product list (Savings)
+func (c *Client) NewGetSavingsFixedAndActivityPositionService() *GetSavingsFixedActivityPositionsService {
+	return &GetSavingsFixedActivityPositionsService{c: c}
+}
+
+// NewListSavingsFixedAndActivityProductsService get fixed and activity product list (Savings)
 func (c *Client) NewListSavingsFixedAndActivityProductsService() *ListSavingsFixedAndActivityProductsService {
 	return &ListSavingsFixedAndActivityProductsService{c: c}
 }
