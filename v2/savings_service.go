@@ -183,6 +183,83 @@ func (s *RedeemSavingsFlexibleProductService) Do(ctx context.Context, opts ...Re
 	return err
 }
 
+
+// https://binance-docs.github.io/apidocs/spot/en/#get-purchase-record-user_data
+type GetLendingPurchaseRecordService struct {
+	c           *Client
+	lendingType string
+	asset       string
+	current     int64
+	size        int64
+	startTime   int64
+	endTime     int64
+}
+
+func (s *GetLendingPurchaseRecordService) LendingType(lendingType string) *GetLendingPurchaseRecordService {
+	s.lendingType = lendingType
+	return s
+}
+
+func (s *GetLendingPurchaseRecordService) Asset(asset string) *GetLendingPurchaseRecordService {
+	s.asset = asset
+	return s
+}
+
+func (s *GetLendingPurchaseRecordService) Size(size int64) *GetLendingPurchaseRecordService {
+	s.size = size
+	return s
+}
+
+func (s *GetLendingPurchaseRecordService) Current(current int64) *GetLendingPurchaseRecordService {
+	s.current = current
+	return s
+}
+func (s *GetLendingPurchaseRecordService) StartTime(startTime int64) *GetLendingPurchaseRecordService {
+	s.startTime = startTime
+	return s
+}
+func (s *GetLendingPurchaseRecordService) EndTime(endTime int64) *GetLendingPurchaseRecordService {
+	s.endTime = endTime
+	return s
+}
+
+// Do send request
+func (s *GetLendingPurchaseRecordService) Do(ctx context.Context, opts ...RequestOption) ([]*SavingsProduct, error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/sapi/v1/lending/union/purchaseRecord",
+		secType:  secTypeSigned,
+	}
+	m := params{
+		"lendingType": s.lendingType,
+	}
+	if s.size != 0 {
+		m["size"] = s.size
+	}
+	if s.current != 0 {
+		m["current"] = s.current
+	}
+	if s.startTime != 0 {
+		m["startTime"] = s.startTime
+	}
+	if s.endTime != 0 {
+		m["endTime"] = s.endTime
+	}
+	if s.asset != "" {
+		m["asset"] = s.asset
+	}
+	r.setParams(m)
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+	var res []*SavingsProduct
+	if err = json.Unmarshal(data, &res); err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 // GetSavingsFixedActivityPositionsService https://binance-docs.github.io/apidocs/spot/en/#get-fixed-activity-project-position-user_data
 type GetSavingsFixedActivityPositionsService struct {
 	c         *Client
@@ -347,23 +424,47 @@ type SavingsFixedProduct struct {
 }
 
 type SavingsFixedPosition struct {
+	Asset           string `json:"asset"`
+	CanTransfer     bool   `json:"canTransfer"`
+	CreateTimestamp int64  `json:"createTimestamp"`
+	Duration        int    `json:"duration"`
+	EndTime         int64  `json:"endTime"`
+	Interest        string `json:"interest"`
+	InterestRate    string `json:"interestRate"`
+	Lot             int    `json:"lot"`
+	PositionID      int    `json:"positionId"`
+	Principal       string `json:"principal"`
+	ProjectID       string `json:"projectId"`
+	ProjectName     string `json:"projectName"`
+	PurchaseTime    int64  `json:"purchaseTime"`
+	RedeemDate      string `json:"redeemDate"`
+	StartTime       int64  `json:"startTime"`
+	Status          string `json:"status"`
+	Type            string `json:"type"`
+}
+
+type SavingsFixedAccount struct {
+	PositionAmountVos []struct {
+		Amount       string `json:"amount"`
+		AmountInBTC  string `json:"amountInBTC"`
+		AmountInUSDT string `json:"amountInUSDT"`
+		Asset        string `json:"asset"`
+	} `json:"positionAmountVos"`
+	TotalAmountInBTC       string `json:"totalAmountInBTC"`
+	TotalAmountInUSDT      string `json:"totalAmountInUSDT"`
+	TotalFixedAmountInBTC  string `json:"totalFixedAmountInBTC"`
+	TotalFixedAmountInUSDT string `json:"totalFixedAmountInUSDT"`
+	TotalFlexibleInBTC     string `json:"totalFlexibleInBTC"`
+	TotalFlexibleInUSDT    string `json:"totalFlexibleInUSDT"`
+}
+
+type SavingsProduct struct {
+	Amount      string `json:"amount"`
 	Asset       string `json:"asset"`
-	CanTransfer bool   `json:"canTransfer"`
-	ProjectId   string `json:"projectId"`
-	ProjectName string `json:"projectName"`
+	CreateTime  int64  `json:"createTime"`
+	LendingType string `json:"lendingType"`
+	Lot         int    `json:"lot"`
+	ProductName string `json:"productName"`
+	PurchaseID  int    `json:"purchaseId"`
 	Status      string `json:"status"`
-	Type        string `json:"type"`
-	// {
-	//     "createTimestamp": 1587010770000,
-	//     "duration": 14,
-	//     "endTime": 1588291200000,
-	//     "interest": "0.19950000",
-	//     "interestRate": "0.05201250",
-	//     "lot": 1,
-	//     "positionId": 51724,
-	//     "principal": "100.00000000",
-	//     "purchaseTime": 1587010771000,
-	//     "redeemDate": "2020-05-01",
-	//     "startTime": 1587081600000,
-	// }
 }
